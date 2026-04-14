@@ -15,6 +15,7 @@
     background-attachment: fixed;
 }
 
+/* HEADER */
 #header-left
 {
     display: flex;
@@ -31,4 +32,84 @@
 #header-left div
 {
     letter-spacing: 2px;
+}
+
+/* PAGE SELECTOR */
+.st-key-mode_toggle [role="radiogroup"]
+{
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    width: 100%;
+    background: var(--midnight);
+    border: 1px solid #2f2f43;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.st-key-mode_toggle [role="radiogroup"] > label
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 0;
+    margin: 0;
+    min-height: 40px;
+    border-radius: 6px;
+    background: var(--dark);
+    color: var(--light);
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-width: 160px;
+    padding: 10px 18px;
+}
+
+.st-key-mode_toggle [role="radiogroup"] > label > div:first-child
+{
+    display: none;
+}
+
+.st-key-mode_toggle [role="radiogroup"] > label > div
+{
+    padding: 0;
+}
+
+.st-key-mode_toggle [role="radiogroup"] > label > input[type="radio"]
+{
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.st-key-mode_toggle [role="radiogroup"] > label p
+{
+    margin: 0;
+    color: inherit;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    line-height: 1;
+}
+
+.st-key-mode_toggle [role="radiogroup"] > label:has(input:checked)
+{
+    background: var(--blood);
+    color: #ffffff;
+}
+
+.st-key-mode_toggle [role="radiogroup"] > label:hover:not(:has(input:checked))
+{
+    background: #222236;
+}
+
+.st-key-mode_toggle [role="radiogroup"] > label:focus-within
+{
+    outline: 2px solid var(--ember);
+    outline-offset: -2px;
+}
+
+.st-key-mode_toggle [role="radiogroup"] > label > input[type="radio"]:checked + div
+{
+    color: #ffffff;
 }
