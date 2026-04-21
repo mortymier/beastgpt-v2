@@ -34,7 +34,7 @@ def render_header():
     text_col.markdown(title_html, unsafe_allow_html=True)
 
     # Right Column
-    mode = right.radio("", ("BATTLE MODE", "CHAT MODE"), index=0, horizontal=True, key="mode_toggle")
+    mode = right.radio(" ", ("BATTLE MODE", "CHAT MODE"), index=0, horizontal=True, key="mode_toggle")
     return mode
 
 # Render Header
@@ -42,8 +42,18 @@ mode = render_header()
 
 # Render Page
 if mode == "BATTLE MODE":
+    st.markdown(" ")
+    st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
+    st.markdown("<h1 class='mode-header'> CHOOSE YOUR FIGHTERS! </h1>", unsafe_allow_html=True)
+    st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
+    st.markdown("#")
     st.write("Battle page - content coming soon.")
 else:
+    st.markdown(" ")
+    st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
+    st.markdown("<h1 class='mode-header'> DESCRIBE YOUR BATTLE! </h1>", unsafe_allow_html=True)
+    st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
+    st.markdown("#")
     st.write("Chat page - content coming soon.")
 
 
