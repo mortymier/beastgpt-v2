@@ -15,6 +15,7 @@
     background-attachment: fixed;
 }
 
+
 /* HEADER */
 #header-left
 {
@@ -33,6 +34,7 @@
 {
     letter-spacing: 2px;
 }
+
 
 /* PAGE SELECTOR */
 .st-key-mode_toggle [role="radiogroup"]
@@ -105,11 +107,34 @@
 
 .st-key-mode_toggle [role="radiogroup"] > label:focus-within
 {
-    outline: 2px solid var(--ember);
+    outline: 2px solid var(--light);
     outline-offset: -2px;
 }
 
 .st-key-mode_toggle [role="radiogroup"] > label > input[type="radio"]:checked + div
 {
     color: #ffffff;
+}
+
+
+/* DIVIDER or HORIZONTAL LINE */
+.divider
+{
+    background: linear-gradient(to right, transparent, var(--blood), var(--gold), var(--blood), transparent);
+    border-radius: 5px;
+    height: 4px;
+}
+
+
+/* MODE HEADER */
+.mode-header
+{
+    text-align: center;
+    text-shadow:0 0 30px rgba(255,215,0,.5);
+    
+}
+
+.mode-header > span
+{
+    color: var(--gold);
 }
