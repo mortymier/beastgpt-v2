@@ -1,5 +1,6 @@
 import streamlit as st
 from pathlib import Path
+from animals import animals
 
 BASE_DIR = Path(__file__).resolve().parent
 LOGO_PATH = BASE_DIR / "beastgptv2_logo.png"
@@ -47,7 +48,24 @@ if mode == "BATTLE MODE":
     st.markdown("<h1 class='mode-header'> CHOOSE YOUR FIGHTERS! </h1>", unsafe_allow_html=True)
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
     st.markdown("#")
-    st.write("Battle page - content coming soon.")
+
+    # Dropdown Menus
+    if "sel1" not in st.session_state:
+        st.session_state.sel1 = animals[0]
+    if "sel2" not in st.session_state:
+        st.session_state.sel2 = animals[1]
+
+    select_col1, vs_col, select_col2 = st.columns([4, 2, 4])
+
+    with select_col1:
+        animal1 = st.selectbox("Animal 1:", animals, key="sel1")
+
+    with vs_col:
+        st.markdown("<div class='vs-col'> VS </div>", unsafe_allow_html=True)
+
+    with select_col2:
+        animal2 = st.selectbox("Animal 2:", animals, key="sel2")
+
 else:
     st.markdown(" ")
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)

@@ -131,10 +131,28 @@
 {
     text-align: center;
     text-shadow:0 0 30px rgba(255,215,0,.5);
-    
+    letter-spacing: 2px;
 }
 
 .mode-header > span
 {
     color: var(--gold);
+}
+
+
+/* DROPDOWN MENUS */
+.stSelectbox label
+{
+    color: var(--gold);
+    letter-spacing: 1px;
+}
+
+.vs-col
+{
+    text-align: center;
+    color: var(--blood);
+    font-size: 5rem;
+    font-family: 'Bangers', cursive;
+    text-shadow:4px 4px 0 #000,0 0 40px rgba(205,64,85,.8);
+    letter-spacing: -5px;
 }
