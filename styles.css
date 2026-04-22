@@ -140,11 +140,12 @@
 }
 
 
-/* DROPDOWN MENUS */
-.stSelectbox label
+/* DROPDOWN MENUS + ANIMAL IMAGES */
+.stSelectbox p
 {
     color: var(--gold);
     letter-spacing: 1px;
+    font-size: 1rem;
 }
 
 .vs-col
@@ -155,4 +156,49 @@
     font-family: 'Bangers', cursive;
     text-shadow:4px 4px 0 #000,0 0 40px rgba(205,64,85,.8);
     letter-spacing: -5px;
+    height: 400px;
+    align-content: center;
+    overflow: hidden;
+}
+
+.animal-img-frame
+{
+    display: flex;
+    width: 100%;
+    height: 300px;
+    border: 4px solid var(--gold);
+    border-radius: 12px;
+    justify-content: center;
+    align-items: center;
+    color: var(--gold);
+    font-weight: 600;
+    font-size: 2rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow:0 0 30px rgba(205,64,85,.5),inset 0 0 30px rgba(0,0,0,.4);
+    transition: transform .4s, box-shadow .4s;
+}
+
+.animal-img-frame:hover
+{
+    transform: scale(1.02);
+    box-shadow:0 0 60px rgba(205,64,85,.9);
+}
+
+.animal-img-frame img
+{
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+}
+
+.fighter-name
+{
+    text-align: center;
+    margin-top: 1rem;
+    color: var(--gold);
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-shadow:0 0 20px rgba(255,215,0,.6);
 }

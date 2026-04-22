@@ -1,6 +1,6 @@
 import streamlit as st
 from pathlib import Path
-from animals import animals
+from animals import animals, animal_images
 
 BASE_DIR = Path(__file__).resolve().parent
 LOGO_PATH = BASE_DIR / "beastgptv2_logo.png"
@@ -58,13 +58,25 @@ if mode == "BATTLE MODE":
     select_col1, vs_col, select_col2 = st.columns([4, 2, 4])
 
     with select_col1:
-        animal1 = st.selectbox("Animal 1:", animals, key="sel1")
+        animal1 = st.selectbox("⚔️ Animal 1:", animals, key="sel1")
+        img1 = animal_images.get(animal1)
+        if img1:
+            st.markdown(f"<div class='animal-img-frame'> <img src='{img1}'/> </div>", unsafe_allow_html=True)
+        else:
+            st.markdown(f"<div class='animal-img-frame'>IMAGE NOT FOUND</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='fighter-name'>{animal1.upper()}</div>", unsafe_allow_html=True)
 
     with vs_col:
         st.markdown("<div class='vs-col'> VS </div>", unsafe_allow_html=True)
 
     with select_col2:
-        animal2 = st.selectbox("Animal 2:", animals, key="sel2")
+        animal2 = st.selectbox("🛡️ Animal 2:", animals, key="sel2")
+        img2 = animal_images.get(animal2)
+        if img2:
+            st.markdown(f"<div class='animal-img-frame'> <img src='{img2}'/> </div>", unsafe_allow_html=True)
+        else:
+            st.markdown(f"<div class='animal-img-frame'>IMAGE NOT FOUND</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='fighter-name'>{animal2.upper()}</div>", unsafe_allow_html=True)
 
 else:
     st.markdown(" ")
