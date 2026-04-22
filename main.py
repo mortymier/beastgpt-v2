@@ -1,4 +1,5 @@
 import streamlit as st
+import random
 from pathlib import Path
 from animals import animals, animal_images
 
@@ -47,14 +48,20 @@ if mode == "BATTLE MODE":
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
     st.markdown("<h1 class='mode-header'> CHOOSE YOUR FIGHTERS! </h1>", unsafe_allow_html=True)
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
-    st.markdown("#")
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
 
-    # Dropdown Menus
     if "sel1" not in st.session_state:
         st.session_state.sel1 = animals[0]
     if "sel2" not in st.session_state:
         st.session_state.sel2 = animals[1]
 
+    def select_random_animals() -> None:
+        a1, a2 = random.sample(animals, 2)
+        st.session_state.sel1 = a1
+        st.session_state.sel2 = a2
+
+    # Dropdown Menus
     select_col1, vs_col, select_col2 = st.columns([4, 2, 4])
 
     with select_col1:
@@ -89,7 +96,7 @@ if mode == "BATTLE MODE":
         st.button("⚔️ BEGIN BATTLE! 🛡️", type="primary", use_container_width=True)
 
     with random_col:
-        st.button("🎲 SELECT RANDOM 🎲", type="secondary", use_container_width=True)
+        st.button("🎲 SELECT RANDOM 🎲", type="secondary", use_container_width=True, on_click=select_random_animals)
 
 else:
     st.markdown(" ")
