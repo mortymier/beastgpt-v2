@@ -1,5 +1,7 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import random
+import time
 from pathlib import Path
 from animals import animals, animal_images
 
@@ -42,7 +44,7 @@ def render_header():
 # Render Header
 mode = render_header()
 
-# Render Page
+# Render Page (BATTLE MODE)
 if mode == "BATTLE MODE":
     st.markdown(" ")
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
@@ -55,6 +57,26 @@ if mode == "BATTLE MODE":
         st.session_state.sel1 = animals[0]
     if "sel2" not in st.session_state:
         st.session_state.sel2 = animals[1]
+
+    def scroll_to_section(anchor_id: str):
+        components.html(
+            f"""
+            <script>
+                window.parent.document.
+                getElementById('{anchor_id}').
+                scrollIntoView({{behavior: 'smooth', block: 'start'}});
+            </script>
+            """,
+            height=0,
+        )
+
+    def play_audio(url: str):
+        html_code = f"""
+            <audio autoplay>
+                <source src="{url}" type="audio/mp3">
+            </audio>
+        """
+        components.html(html_code, height=0, width=0)
 
     def select_random_animals() -> None:
         a1, a2 = random.sample(animals, 2)
@@ -91,13 +113,34 @@ if mode == "BATTLE MODE":
     # Battle Mode Buttons
     space_col1, start_col, space_col2, random_col, space_col3 = st.columns([1, 2, 0.1, 2, 1])
     
-
     with start_col:
-        st.button("⚔️ BEGIN BATTLE! 🛡️", type="primary", use_container_width=True)
+        start_btn = st.button("⚔️ BEGIN BATTLE! 🛡️", type="primary", use_container_width=True)
 
     with random_col:
-        st.button("🎲 SELECT RANDOM 🎲", type="secondary", use_container_width=True, on_click=select_random_animals)
+        random_btn = st.button("🎲 SELECT RANDOM 🎲", type="secondary", use_container_width=True, on_click=select_random_animals)
 
+    # Battle Results
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
+    
+    if start_btn:
+        st.markdown("<div id='battle-results-anchor'></div>", unsafe_allow_html=True)
+        scroll_to_section("battle-results-anchor")
+
+        if animal1 == animal2:
+            st.warning("⚠️ Please pick two different animals for an epic battle!")
+            st.stop()
+        
+        loading_screen = st.empty()
+
+        play_audio("https://assets.mixkit.co/active_storage/sfx/922/922-preview.mp3")
+        for num in ["3", "2", "1", "FIGHT!"]:
+            with loading_screen.container():
+                st.markdown(f"<div class='countdown'>{num}</div>", unsafe_allow_html=True)
+            time.sleep(1)
+
+# Render Page (CHAT MODE)
 else:
     st.markdown(" ")
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
