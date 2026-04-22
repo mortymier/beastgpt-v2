@@ -78,6 +78,19 @@ if mode == "BATTLE MODE":
             st.markdown(f"<div class='animal-img-frame'>IMAGE NOT FOUND</div>", unsafe_allow_html=True)
         st.markdown(f"<div class='fighter-name'>{animal2.upper()}</div>", unsafe_allow_html=True)
 
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Battle Mode Buttons
+    space_col1, start_col, space_col2, random_col, space_col3 = st.columns([1, 2, 0.1, 2, 1])
+    
+
+    with start_col:
+        st.button("⚔️ BEGIN BATTLE! 🛡️", type="primary", use_container_width=True)
+
+    with random_col:
+        st.button("🎲 SELECT RANDOM 🎲", type="secondary", use_container_width=True)
+
 else:
     st.markdown(" ")
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
