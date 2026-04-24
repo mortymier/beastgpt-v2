@@ -126,19 +126,57 @@ if mode == "BATTLE MODE":
     
     if start_btn:
         st.markdown("<div id='battle-results-anchor'></div>", unsafe_allow_html=True)
-        scroll_to_section("battle-results-anchor")
-
+        
         if animal1 == animal2:
             st.warning("⚠️ Please pick two different animals for an epic battle!")
             st.stop()
         
         loading_screen = st.empty()
+        scroll_to_section("battle-results-anchor")
 
         play_audio("https://assets.mixkit.co/active_storage/sfx/922/922-preview.mp3")
         for num in ["3", "2", "1", "FIGHT!"]:
             with loading_screen.container():
                 st.markdown(f"<div class='countdown'>{num}</div>", unsafe_allow_html=True)
             time.sleep(1)
+
+        loading_screen.empty()
+        scroll_to_section("battle-results-anchor")
+
+        play_audio("https://assets.mixkit.co/active_storage/sfx/2780/2780-preview.mp3")
+        with loading_screen.container():
+            st.markdown(f"""
+            <div class="fighter-slide-container">
+                <div class="fighter-slide-left">
+                    <div class="animal-img-frame-small"> <img src="{img1}"/> </div>
+                </div>
+                <div class="vs-col" style="flex: 1;">⚔️</div>
+                <div class="fighter-slide-right">
+                    <div class="animal-img-frame-small"> <img src="{img2}"/> </div>
+                </div>
+            </div> 
+            """, unsafe_allow_html=True)
+            
+            cry_area = st.empty()
+            battle_cries = [
+                "SIMULATING BATTLE...",
+                "SIMULATING BATTLE...",
+                f"⚔️ {animal1.upper()} CHARGES FORWARD!",
+                f"🛡️ {animal2.upper()} STANDS ITS GROUND...",
+                "💥 THE GROUND TREMBLES...",
+                "🔍 ANALYZING BEAST STATS...",
+                "⚡ EPIC COLLISION INCOMING!"
+            ]
+
+            for cry in battle_cries:
+                cry_area.markdown(f"<div class='fighter-name'>{cry}</div>", unsafe_allow_html=True)
+                time.sleep(1.25)
+
+        loading_screen.empty()
+        scroll_to_section("battle-results-anchor")
+
+        with st.spinner("💭 BEASTGPT IS DECIDING THE VICTOR..."):
+            time.sleep(3)
 
 # Render Page (CHAT MODE)
 else:
