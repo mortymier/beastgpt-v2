@@ -4,6 +4,7 @@ import random
 import time
 from pathlib import Path
 from animals import animals, animal_images
+from ai import simulate_battle
 
 BASE_DIR = Path(__file__).resolve().parent
 LOGO_PATH = BASE_DIR / "beastgptv2_logo.png"
@@ -126,11 +127,11 @@ if mode == "BATTLE MODE":
     
     if start_btn:
         st.markdown("<div id='battle-results-anchor'></div>", unsafe_allow_html=True)
-        
+
         if animal1 == animal2:
             st.warning("⚠️ Please pick two different animals for an epic battle!")
             st.stop()
-        
+
         loading_screen = st.empty()
         scroll_to_section("battle-results-anchor")
 
@@ -154,9 +155,9 @@ if mode == "BATTLE MODE":
                 <div class="fighter-slide-right">
                     <div class="animal-img-frame-small"> <img src="{img2}"/> </div>
                 </div>
-            </div> 
+            </div>
             """, unsafe_allow_html=True)
-            
+
             cry_area = st.empty()
             battle_cries = [
                 "SIMULATING BATTLE...",
@@ -165,18 +166,19 @@ if mode == "BATTLE MODE":
                 f"🛡️ {animal2.upper()} STANDS ITS GROUND...",
                 "💥 THE GROUND TREMBLES...",
                 "🔍 ANALYZING BEAST STATS...",
-                "⚡ EPIC COLLISION INCOMING!"
+                "⚡ EPIC COLLISION INCOMING!",
             ]
 
             for cry in battle_cries:
-                cry_area.markdown(f"<div class='fighter-name'>{cry}</div>", unsafe_allow_html=True)
+                cry_area.markdown(f"<div class='battle-cry'>{cry}</div>", unsafe_allow_html=True)
                 time.sleep(1.25)
 
         loading_screen.empty()
         scroll_to_section("battle-results-anchor")
 
         with st.spinner("💭 BEASTGPT IS DECIDING THE VICTOR..."):
-            time.sleep(3)
+            battle_result = simulate_battle(animal1, animal2)
+            st.write(battle_result)
 
 # Render Page (CHAT MODE)
 else:
