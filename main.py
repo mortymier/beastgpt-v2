@@ -58,6 +58,10 @@ if mode == "BATTLE MODE":
         st.session_state.sel1 = animals[0]
     if "sel2" not in st.session_state:
         st.session_state.sel2 = animals[1]
+    if "battle_ongoing" not in st.session_state:
+        st.session_state.battle_ongoing = False
+    if "battle_done" not in st.session_state:
+        st.session_state.battle_done = False
 
     def scroll_to_section(anchor_id: str):
         components.html(
@@ -88,7 +92,7 @@ if mode == "BATTLE MODE":
     select_col1, vs_col, select_col2 = st.columns([4, 2, 4])
 
     with select_col1:
-        animal1 = st.selectbox("⚔️ Animal 1:", animals, key="sel1")
+        animal1 = st.selectbox("⚔️ Animal 1:", animals, key="sel1", disabled=st.session_state.battle_ongoing)
         img1 = animal_images.get(animal1)
         if img1:
             st.markdown(f"<div class='animal-img-frame'> <img src='{img1}'/> </div>", unsafe_allow_html=True)
@@ -100,7 +104,7 @@ if mode == "BATTLE MODE":
         st.markdown("<div class='vs-col'> VS </div>", unsafe_allow_html=True)
 
     with select_col2:
-        animal2 = st.selectbox("🛡️ Animal 2:", animals, key="sel2")
+        animal2 = st.selectbox("🛡️ Animal 2:", animals, key="sel2", disabled=st.session_state.battle_ongoing)
         img2 = animal_images.get(animal2)
         if img2:
             st.markdown(f"<div class='animal-img-frame'> <img src='{img2}'/> </div>", unsafe_allow_html=True)
@@ -115,10 +119,21 @@ if mode == "BATTLE MODE":
     space_col1, start_col, space_col2, random_col, space_col3 = st.columns([1, 2, 0.1, 2, 1])
     
     with start_col:
-        start_btn = st.button("⚔️ BEGIN BATTLE! 🛡️", type="primary", use_container_width=True)
+        start_btn = st.button(
+            "⚔️ BEGIN BATTLE! 🛡️", 
+            type="primary", 
+            use_container_width=True,
+            disabled=st.session_state.battle_ongoing
+        )
 
     with random_col:
-        random_btn = st.button("🎲 SELECT RANDOM 🎲", type="secondary", use_container_width=True, on_click=select_random_animals)
+        random_btn = st.button(
+            "🎲 SELECT RANDOM 🎲", 
+            type="secondary", 
+            use_container_width=True, 
+            on_click=select_random_animals,
+            disabled=st.session_state.battle_ongoing
+        )
 
     # Battle Results
     st.markdown("<br>", unsafe_allow_html=True)
@@ -126,11 +141,16 @@ if mode == "BATTLE MODE":
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
     
     if start_btn:
-        st.markdown("<div id='battle-results-anchor'></div>", unsafe_allow_html=True)
-
         if animal1 == animal2:
             st.warning("⚠️ Please pick two different animals for an epic battle!")
             st.stop()
+
+        # Lock buttons
+        st.session_state.battle_ongoing = True
+        st.rerun()  # Re-render with buttons disabled before starting
+
+    if st.session_state.battle_ongoing:
+        st.markdown("<div id='battle-results-anchor'></div>", unsafe_allow_html=True)
 
         loading_screen = st.empty()
         scroll_to_section("battle-results-anchor")
@@ -162,8 +182,8 @@ if mode == "BATTLE MODE":
             battle_cries = [
                 "SIMULATING BATTLE...",
                 "SIMULATING BATTLE...",
-                f"⚔️ {animal1.upper()} CHARGES FORWARD!",
-                f"🛡️ {animal2.upper()} STANDS ITS GROUND...",
+                f"⚔️ <span>{animal1.upper()}</span> CHARGES FORWARD!",
+                f"🛡️ <span>{animal2.upper()}</span> STANDS ITS GROUND...",
                 "💥 THE GROUND TREMBLES...",
                 "🔍 ANALYZING BEAST STATS...",
                 "⚡ EPIC COLLISION INCOMING!",
@@ -177,9 +197,20 @@ if mode == "BATTLE MODE":
         scroll_to_section("battle-results-anchor")
 
         with st.spinner("💭 BEASTGPT IS DECIDING THE VICTOR..."):
-            battle_result = simulate_battle(animal1, animal2)
-            st.write(battle_result)
+            # battle_result = simulate_battle(animal1, animal2)
+            # st.write(battle_result)
+            st.write(f"{animal1} wins!")
+            time.sleep(3)
 
+        st.session_state.battle_ongoing = False
+        st.session_state.battle_done = True
+
+        if st.session_state.battle_done:
+            _, btn_col, _ = st.columns([2, 2, 2])
+            with btn_col:
+                if st.button("🔄 BATTLE AGAIN 🔄", type="secondary", use_container_width=True):
+                    st.rerun()
+    
 # Render Page (CHAT MODE)
 else:
     st.markdown(" ")
