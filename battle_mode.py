@@ -2,6 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import random
 import time
+import re
 from animals import animals, animal_images
 from ai import simulate_battle
 
@@ -76,7 +77,7 @@ def render_battle():
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
-    space_col1, start_col, space_col2, random_col, space_col3 = st.columns([1, 2, 0.1, 2, 1])
+    _, start_col, _, random_col, _ = st.columns([1, 2, 0.1, 2, 1])
 
     with start_col:
         start_btn = st.button(
@@ -153,15 +154,119 @@ def render_battle():
         scroll_to_section("battle-results-anchor")
 
         with st.spinner("💭 BEASTGPT IS DECIDING THE VICTOR..."):
-            # battle_result = simulate_battle(animal1, animal2)
-            time.sleep(2)
-            st.write("Flash Test")
+            battle_result = simulate_battle(animal1, animal2)
 
         st.markdown("<div class='flash-overlay'></div>", unsafe_allow_html=True)
         time.sleep(0.1)
 
+        winner_match = re.search(r'^WHO WINS\?\s*(?:\n\s*)?([A-Z][A-Z &-]*)\s*$', battle_result, re.MULTILINE)
+        winner = winner_match.group(1).strip() if winner_match else None
+
+        sections = battle_result.split('\n\n')
+        story_paragraphs = []
+        table_block = None
+        in_stats = False
+
+        for section in sections:
+            stripped = section.strip()
+            if '|Trait' in stripped or '|---' in stripped or (stripped.startswith('|') and '|' in stripped[1:]):
+                table_block = stripped
+                in_stats = True
+            elif 'WHO WINS' in stripped or (winner and winner in stripped and len(stripped) < 60):
+                continue
+            elif 'BATTLE STATS' in stripped:
+                in_stats = True
+            elif not in_stats and stripped and stripped not in ['BATTLE STATS']:
+                story_paragraphs.append(stripped)
+
+        scroll_to_section("battle-results-anchor")
+
+        if winner:
+            st.markdown(f"""
+            <div style='margin-top:-7rem;text-align:center;padding:1.5rem 0;'>
+                <div style='font-family:Bebas Neue,cursive;font-size:1.2rem;color:#e8e8e8;letter-spacing:5px;margin-bottom:.5rem;'>
+                    AND THE WINNER IS
+                </div>
+                <div class='winner-banner'>  
+                    <span class='crown'>🏆</span> &nbsp; {winner} &nbsp; <span class='crown'>🏆</span>
+                </div>
+            </div>""", unsafe_allow_html=True)
+            time.sleep(0.4)
+            st.balloons()
+        else:
+            st.markdown("""
+            <div style='text-align:center;padding:1rem 0;'>
+                <div class='winner-banner'>⚔️ EPIC BATTLE CONCLUDED! ⚔️</div>
+            </div>""", unsafe_allow_html=True)
+
+        st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+
         st.session_state.battle_ongoing = False
         st.session_state.battle_done = True
+
+        story_html = "".join(
+            f"<p style='margin-bottom:1.2rem;animation:fadeSlideUp .5s {i*0.15:.2f}s ease-out both;'>{p}</p>"
+            for i, p in enumerate(story_paragraphs[:4]) if p
+        )
+
+        if story_html:
+            st.markdown(f"""
+            <div style='margin-bottom:3rem;'>
+                <div class='section-head' style='color:#cd4055;border-color:#cd4055;'>
+                    📖 &nbsp; THE TALE OF BATTLE
+                </div>
+                <div class='story-card'>{story_html}</div>
+            </div>""", unsafe_allow_html=True)
+            time.sleep(0.3)
+
+        if table_block:
+            rows = [r for r in table_block.strip().split('\n') if r.strip().startswith('|')]
+            header_row = rows[0] if rows else ""
+            data_rows = [r for r in rows[2:] if r.strip() and '---' not in r]
+    
+            def parse_row(row):
+                return [cell.strip() for cell in row.strip().strip('|').split('|')]
+    
+            headers = parse_row(header_row)
+
+            if winner and len(headers) >= 3:
+                if headers[1].upper() == winner.upper():
+                    headers[1] = f"🏆 {headers[1]} (Victory)"
+                    headers[2] = f"💔 {headers[2]} (Defeat)"
+                elif headers[2].upper() == winner.upper():
+                    headers[1] = f"💔 {headers[1]} (Defeat)"
+                    headers[2] = f"🏆 {headers[2]} (Victory)"
+
+            th_html = "".join(f"<th>{h}</th>" for h in headers)
+            td_rows_html = ""
+            for dr in data_rows:
+                cells = parse_row(dr)
+                while len(cells) < len(headers):
+                    cells.append("")
+                td_html = "".join(f"<td>{c}</td>" for c in cells[:len(headers)])
+                td_rows_html += f"<tr>{td_html}</tr>"
+    
+            table_html = f"<table class='battle-table'><thead><tr>{th_html}</tr></thead><tbody>{td_rows_html}</tbody></table>"
+    
+            st.markdown(f"""
+            <div style='margin-bottom:3rem;'>
+                <div class='section-head' style='color:#4ecdc4;border-color:#4ecdc4;'>
+                    ⚖️ &nbsp; BATTLE STATS
+                </div>
+                {table_html}
+            </div>""", unsafe_allow_html=True)
+        else:
+            stats_start = battle_result.find('BATTLE STATS')
+            if stats_start != -1:
+                st.markdown(f"""
+                <div class='section-head' style='color:#4ecdc4;border-color:#4ecdc4;'>
+                    ⚔️ &nbsp; BATTLE STATS
+                </div>""", unsafe_allow_html=True)
+                st.markdown(battle_result[stats_start + len('BATTLE STATS'):])
+ 
+        st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
 
         if st.session_state.battle_done:
             _, btn_col, _ = st.columns([2, 2, 2])
