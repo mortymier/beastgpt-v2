@@ -271,8 +271,8 @@
 
 @keyframes countPop
 {
-    from{ transform: scale(2); opacity: 0; }
-    to{ transform: scale(1); opacity: 1; }
+    from { transform: scale(2); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
 .fighter-slide-container
@@ -328,4 +328,21 @@
 .battle-cry > span
 {
     color: var(--gold);
+}
+
+.flash-overlay
+{
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+    animation: flashOnce .3s ease-out;
+    z-index: 9999;
+}
+
+@keyframes flashOnce
+{
+    0% { opacity: .8; }
+    100% { opacity: 0; }
 }

@@ -153,8 +153,12 @@ def render_battle():
         scroll_to_section("battle-results-anchor")
 
         with st.spinner("💭 BEASTGPT IS DECIDING THE VICTOR..."):
-            battle_result = simulate_battle(animal1, animal2)
-            st.write(battle_result)
+            # battle_result = simulate_battle(animal1, animal2)
+            time.sleep(2)
+            st.write("Flash Test")
+
+        st.markdown("<div class='flash-overlay'></div>", unsafe_allow_html=True)
+        time.sleep(0.1)
 
         st.session_state.battle_ongoing = False
         st.session_state.battle_done = True
