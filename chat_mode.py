@@ -1,6 +1,11 @@
 import streamlit as st
+import html
 import re
+from pathlib import Path
 from ai import simulate_chat_battle
+
+LOGO_PATH = Path(__file__).resolve().parent / "beastgptv2_logo.png"
+BEAST_LOGO_BYTES = LOGO_PATH.read_bytes() if LOGO_PATH.exists() else None
 
 def init_chat_state():
     if "chat_history" not in st.session_state:
@@ -17,9 +22,23 @@ def render_chat():
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
+    if not st.session_state.chat_history:
+        _, center, _ = st.columns([1, 6, 1])
+        with center:
+            st.markdown("""
+                <div style="text-align:center; line-height:2; letter-spacing:1px; margin-bottom: 2rem">
+                    💬 Tell <span style="color:crimson">BeastGPT</span> about your epic animal battle! <br>
+                    ⚔️ Which <span style="color:orange">two animals</span>  are going to be fighting? <br>
+                    ⛅ What is the  <span style="color:gold">weather and terrain</span> during the battle? <br>
+                    <span style="color:gray"> Example: Alligator vs Anaconda in a riverbank while raining. </span>
+                </div>""", unsafe_allow_html=True)
+
     for message in st.session_state.chat_history:
-        with st.chat_message(message["role"], avatar="🦁" if message["role"] == "assistant" else "👤"):
-            if message["role"] == "assistant" and "WHO WINS" in message["content"].upper():
+        avatar = BEAST_LOGO_BYTES if message["role"] == "assistant" else "👤"
+        with st.chat_message(message["role"], avatar=avatar):
+            if message["role"] == "user":
+                st.markdown(message["content"])
+            elif message["role"] == "assistant" and "WHO WINS" in message["content"].upper():
                 render_battle_result(message["content"])
             else:
                 st.markdown(message["content"])
@@ -29,7 +48,7 @@ def render_chat():
     if user_input:
         st.session_state.chat_history.append({"role": "user", "content": user_input})
 
-        with st.chat_message("assistant", avatar="🦁"):
+        with st.chat_message("assistant", avatar=BEAST_LOGO_BYTES):
             full_response = ""
             placeholder = st.empty()
 
@@ -40,6 +59,15 @@ def render_chat():
             st.session_state.chat_history.append({"role": "assistant", "content": full_response})
 
         st.rerun()
+
+    # Clear chat button — only show if there's history
+    if st.session_state.chat_history:
+        _, _, right = st.columns([2, 2, 1])
+        with right:
+            if st.button("🗑️ CLEAR CHAT 🗑️", type="secondary", key="clear_chat"):
+                st.session_state.chat_history = []
+                st.session_state.chat_phase = "scenario"
+                st.rerun()
 
 
 def render_battle_result(result_text: str):
@@ -57,6 +85,7 @@ def render_battle_result(result_text: str):
     winner_norm = normalize_text(winner) if winner else None
 
     sections = result_text.split('\n\n')
+    preamble_paragraphs = [] 
     story_paragraphs = []
     table_block = None
     in_stats = False
@@ -72,11 +101,15 @@ def render_battle_result(result_text: str):
             continue
         elif 'BATTLE STATS' in stripped:
             in_stats = True
+        elif not past_winner_line and not in_stats and stripped:  
+            preamble_paragraphs.append(stripped)
         elif past_winner_line and not in_stats and stripped and stripped not in ['BATTLE STATS']:
             story_paragraphs.append(stripped)
 
-    if winner or story_paragraphs:
+    if preamble_paragraphs or winner or story_paragraphs:
         combined_md = ""
+        if preamble_paragraphs:
+            combined_md += "\n\n".join(preamble_paragraphs) + "\n\n" 
         if winner:
             combined_md += f"**WHO WINS? {winner}**\n\n"
         if story_paragraphs:
