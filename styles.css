@@ -465,25 +465,11 @@
 }
 
 /* Chat input styling */
-.stChatInputContainer input
+[data-testid="stBottomBlockContainer"]
 {
-    background: var(--midnight);
-    border: 2px solid var(--blood);
-    color: var(--light);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-}
-
-.stChatInputContainer input::placeholder
-{
-    color: rgba(232, 232, 232, 0.6);
-    letter-spacing: 0.5px;
-}
-
-.stChatInputContainer input:focus
-{
-    border-color: var(--gold);
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    background-color: var(--midnight);
+    border-top: 2px solid var(--blood);
+    padding: 2rem 8rem;
 }
 
 /* Battle result styling in chat */
