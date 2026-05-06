@@ -1,5 +1,4 @@
 import streamlit as st
-import html
 import re
 from pathlib import Path
 from ai import simulate_chat_battle
@@ -59,7 +58,7 @@ def render_chat():
             st.session_state.chat_history.append({"role": "assistant", "content": full_response})
 
         st.rerun()
-
+        
     # Clear chat button — only show if there's history
     if st.session_state.chat_history:
         _, _, right = st.columns([2, 2, 1])
@@ -68,7 +67,6 @@ def render_chat():
                 st.session_state.chat_history = []
                 st.session_state.chat_phase = "scenario"
                 st.rerun()
-
 
 def render_battle_result(result_text: str):
     def normalize_text(value: str) -> str:
