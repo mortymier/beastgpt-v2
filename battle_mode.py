@@ -158,6 +158,7 @@ def render_battle():
 
         st.markdown("<div class='flash-overlay'></div>", unsafe_allow_html=True)
         time.sleep(0.1)
+        play_audio("https://cdn.freesound.org/previews/626/626259_6303715-lq.mp3")
 
         winner_match = re.search(r'^WHO WINS\?\s*(?:\n\s*)?([A-Z][A-Z &-]*)\s*$', battle_result, re.MULTILINE)
         winner = winner_match.group(1).strip() if winner_match else None
