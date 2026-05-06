@@ -11,7 +11,7 @@
 BeastGPT is an educational and entertaining animal battle simulator chatbot.
 It compares two animals and simulates a hypothetical battle based on their real life characteristics.
 
-This app was made in fulfillment for our midterm and final requirement in the course CSIT349 - Applied AI.
+This app was created to meet the midterm and final requirements for the course CSIT349 - Applied AI.
 
 ___ 
 
@@ -19,7 +19,7 @@ ___
 
 * **Battle Mode:** Select two animals from dropdown menus and simulate a battle with dynamic visuals.
 * **Chat Mode:** Describe your epic animal battle in full detail on a chat interface.
-* AI generates entertaining battle stories and provides comprehensive animal stats table.
+* AI generates entertaining battle stories and provides comprehensive animal stat tables.
 * AI responds to animal education inquiries.
 
 ---
@@ -29,7 +29,7 @@ ___
 * Python v3.14
 * Streamlit
 * Groq API
-* Llama 3.1 8b Instant (Chat Mode)
+* Llama 3.1 8B Instant (Chat Mode)
 * Llama 3.3 70B Versatile (Battle Mode)
 
 --- 
