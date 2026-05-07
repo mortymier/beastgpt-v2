@@ -15,17 +15,6 @@ def init_battle_state():
     if "battle_done" not in st.session_state:
         st.session_state.battle_done = False
 
-def scroll_to_section():
-    st.html(
-        """
-        <script>
-            const element = window.parent.document.getElementById('battle-results-anchor');
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
-        </script>
-        """,
-        unsafe_allow_javascript=True,
-    )
-
 def play_audio(url: str):
     st.html(
         f"""
@@ -109,12 +98,22 @@ def render_battle():
 
     if st.session_state.battle_ongoing:
         loading_screen = st.empty()
-        scroll_to_section()
 
         play_audio("https://assets.mixkit.co/active_storage/sfx/922/922-preview.mp3")
         for num in ["3", "2", "1", "FIGHT!"]:
             with loading_screen.container():
                 st.markdown(f"<div class='countdown'>{num}</div>", unsafe_allow_html=True)
+            if num == "3":
+                st.html(
+                    """
+                    <script>
+                        const element = window.parent.document.getElementById('battle-results-anchor');
+                        if(element)
+                            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    </script>
+                    """,
+                    unsafe_allow_javascript=True,
+                )
             time.sleep(1)
 
         loading_screen.empty()
@@ -177,8 +176,6 @@ def render_battle():
             elif not in_stats and stripped and stripped not in ['BATTLE STATS']:
                 story_paragraphs.append(stripped)
 
-        scroll_to_section()
-
         if winner:
             st.markdown(f"""
             <div style='margin-top:-7rem;text-align:center;padding:1.5rem 0;'>
@@ -189,6 +186,18 @@ def render_battle():
                     <span class='crown'>🏆</span> &nbsp; {winner} &nbsp; <span class='crown'>🏆</span>
                 </div>
             </div>""", unsafe_allow_html=True)
+
+            st.html(
+                    """
+                    <script>
+                        const element = window.parent.document.getElementById('battle-results-anchor');
+                        if(element)
+                            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    </script>
+                    """,
+                    unsafe_allow_javascript=True,
+                )
+            
             time.sleep(0.4)
             st.balloons()
         else:
