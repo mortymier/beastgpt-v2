@@ -19,15 +19,8 @@ def scroll_to_section():
     st.html(
         """
         <script>
-            const scrollToAnchor = () => {
-                const element = window.parent.document.getElementById('battle-results-anchor');
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                } else {
-                    requestAnimationFrame(scrollToAnchor);
-                }
-            };
-            scrollToAnchor();
+            const element = window.parent.document.getElementById('battle-results-anchor');
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
         </script>
         """,
         unsafe_allow_javascript=True,
@@ -105,6 +98,7 @@ def render_battle():
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
+    st.markdown("<div id='battle-results-anchor'></div>", unsafe_allow_html=True)
 
     if start_btn:
         if animal1 == animal2:
@@ -114,7 +108,6 @@ def render_battle():
         st.rerun()
 
     if st.session_state.battle_ongoing:
-        st.markdown("<div id='battle-results-anchor'></div>", unsafe_allow_html=True)
         loading_screen = st.empty()
         scroll_to_section()
 
