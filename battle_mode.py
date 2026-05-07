@@ -21,13 +21,22 @@ def scroll_to_section(anchor_id: str):
     st.html(
         f"""
         <script>
-            const scrollToAnchor = () => {{
-                const target = window.parent.document.getElementById({target_id});
-                if (target) {{
-                    target.scrollIntoView({{behavior: 'smooth', block: 'start'}});
+            (function() {{
+                const targetId = {target_id};
+                if (typeof window.__beastgpt_scrollToAnchor !== 'function') {{
+                    window.__beastgpt_scrollToAnchor = function(id) {{
+                        try {{
+                            const target = window.parent.document.getElementById(id);
+                            if (target) {{
+                                target.scrollIntoView({{behavior: 'smooth', block: 'start'}});
+                            }}
+                        }} catch (e) {{
+                            // ignore errors (e.g., cross-origin frames)
+                        }}
+                    }};
                 }}
-            }};
-            requestAnimationFrame(() => setTimeout(scrollToAnchor, 0));
+                requestAnimationFrame(() => setTimeout(() => window.__beastgpt_scrollToAnchor(targetId), 0));
+            }})();
         </script>
         """,
         unsafe_allow_javascript=True,
