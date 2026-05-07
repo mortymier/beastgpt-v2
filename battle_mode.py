@@ -19,8 +19,15 @@ def scroll_to_section():
     st.html(
         """
         <script>
-            const element = window.parent.document.getElementById('battle-results-anchor');
-            element.scrollIntoView({behavior: 'smooth', block: 'start'});
+            const scrollToAnchor = () => {
+                const element = window.parent.document.getElementById('battle-results-anchor');
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    requestAnimationFrame(scrollToAnchor);
+                }
+            };
+            scrollToAnchor();
         </script>
         """,
         unsafe_allow_javascript=True,
