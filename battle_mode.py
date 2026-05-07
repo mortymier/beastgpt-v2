@@ -15,28 +15,30 @@ def init_battle_state():
     if "battle_done" not in st.session_state:
         st.session_state.battle_done = False
 
-def scroll_to_section(anchor_id: str):
-    st.html(f"""
+def scroll_to_section():
+    st.html(
+        """
         <script>
-            (() => {{
-                const tryScroll = (attempts) => {{
-                    try {{
-                        const doc = window.top.document;
-                        const target = doc.getElementById('{anchor_id}');
-                        if (target) {{
-                            target.scrollIntoView({{ behavior: 'smooth', block: 'start' }});
-                        }} else if (attempts > 0) {{
+            (() => {
+                const tryScroll = (attempts) => {
+                    try {
+                        const doc = window.parent?.document || window.document;
+                        const el = doc.getElementById('battle-results-anchor');
+                        if (el) {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        } else if (attempts > 0) {
                             setTimeout(() => tryScroll(attempts - 1), 150);
-                        }}
-                    }} catch (e) {{
-                        console.error('[scroll_to_section] Failed to scroll to anchor:', '{anchor_id}', e);
-                    }}
-                }};
+                        }
+                    } catch (e) {
+                        // ignore cross-frame errors in hosted deployments
+                    }
+                };
 
                 setTimeout(() => tryScroll(15), 200);
-            }})();
+            })();
         </script>
-        """, unsafe_allow_javascript=True
+        """,
+        unsafe_allow_javascript=True,
     )
 
 def play_audio(url: str):
@@ -122,7 +124,7 @@ def render_battle():
     if st.session_state.battle_ongoing:
         st.markdown("<div id='battle-results-anchor'></div>", unsafe_allow_html=True)
         loading_screen = st.empty()
-        scroll_to_section("battle-results-anchor")
+        scroll_to_section()
 
         play_audio("https://assets.mixkit.co/active_storage/sfx/922/922-preview.mp3")
         for num in ["3", "2", "1", "FIGHT!"]:
@@ -190,7 +192,7 @@ def render_battle():
             elif not in_stats and stripped and stripped not in ['BATTLE STATS']:
                 story_paragraphs.append(stripped)
 
-        scroll_to_section("battle-results-anchor")
+        scroll_to_section()
 
         if winner:
             st.markdown(f"""
