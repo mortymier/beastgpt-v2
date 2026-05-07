@@ -19,23 +19,8 @@ def scroll_to_section():
     st.html(
         """
         <script>
-            (() => {
-                const tryScroll = (attempts) => {
-                    try {
-                        const doc = window.parent?.document || window.document;
-                        const el = doc.getElementById('battle-results-anchor');
-                        if (el) {
-                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        } else if (attempts > 0) {
-                            setTimeout(() => tryScroll(attempts - 1), 150);
-                        }
-                    } catch (e) {
-                        // ignore cross-frame errors in hosted deployments
-                    }
-                };
-
-                setTimeout(() => tryScroll(15), 200);
-            })();
+            const element = window.parent.document.getElementById('battle-results-anchor');
+            element.scrollIntoView({behavior: 'smooth', block: 'start'});
         </script>
         """,
         unsafe_allow_javascript=True,
