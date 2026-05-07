@@ -16,8 +16,7 @@ def init_battle_state():
         st.session_state.battle_done = False
 
 def scroll_to_section(anchor_id: str):
-    st.html(
-        f"""
+    st.html(f"""
         <script>
             (() => {{
                 const tryScroll = (attempts) => {{
@@ -30,7 +29,6 @@ def scroll_to_section(anchor_id: str):
                             setTimeout(() => tryScroll(attempts - 1), 150);
                         }}
                     }} catch (e) {{
-                        // Cross-origin access blocked; silently ignore
                         console.error('[scroll_to_section] Failed to scroll to anchor:', '{anchor_id}', e);
                     }}
                 }};
@@ -38,8 +36,7 @@ def scroll_to_section(anchor_id: str):
                 setTimeout(() => tryScroll(15), 200);
             }})();
         </script>
-        """,
-        unsafe_allow_html=True,
+        """, unsafe_allow_javascript=True
     )
 
 def play_audio(url: str):
