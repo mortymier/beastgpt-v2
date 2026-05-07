@@ -1,7 +1,6 @@
 import streamlit as st
 import random
 import time
-import json
 import re
 from animals import animals, animal_images
 from ai import simulate_battle
@@ -17,33 +16,30 @@ def init_battle_state():
         st.session_state.battle_done = False
 
 def scroll_to_section(anchor_id: str):
-    target_id = json.dumps(anchor_id)
     st.html(
         f"""
         <script>
             (() => {{
-                try {{
-                    if (window.__beastgptScrollTimeout) {{
-                        clearTimeout(window.__beastgptScrollTimeout);
-                    }}
-
-                    window.__beastgptScrollTimeout = setTimeout(() => {{
-                        try {{
-                            const target = window.parent.document.getElementById({target_id});
-                            if (target) {{
-                                target.scrollIntoView({{ behavior: 'smooth', block: 'start' }});
-                            }}
-                        }} catch (error) {{
-                            // ignore errors (e.g., cross-origin frames)
+                const tryScroll = (attempts) => {{
+                    try {{
+                        const doc = window.top.document;
+                        const target = doc.getElementById('{anchor_id}');
+                        if (target) {{
+                            target.scrollIntoView({{ behavior: 'smooth', block: 'start' }});
+                        }} else if (attempts > 0) {{
+                            setTimeout(() => tryScroll(attempts - 1), 150);
                         }}
-                    }}, 0);
-                }} catch (error) {{
-                    // ignore errors from repeated HTML injections
-                }}
+                    }} catch (e) {{
+                        // Cross-origin access blocked; silently ignore
+                        console.error('[scroll_to_section] Failed to scroll to anchor:', '{anchor_id}', e);
+                    }}
+                }};
+
+                setTimeout(() => tryScroll(15), 200);
             }})();
         </script>
         """,
-        unsafe_allow_javascript=True,
+        unsafe_allow_html=True,
     )
 
 def play_audio(url: str):
