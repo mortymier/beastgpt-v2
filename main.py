@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 from pathlib import Path
 from battle_mode import render_battle
 from chat_mode import render_chat
