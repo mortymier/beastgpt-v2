@@ -281,6 +281,7 @@
     align-items: center;
     justify-content: center;
     position: relative;
+    margin: -4rem 0;
 }
 
 .fighter-slide-left,
