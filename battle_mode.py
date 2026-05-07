@@ -1,7 +1,7 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import random
 import time
+import json
 import re
 from animals import animals, animal_images
 from ai import simulate_battle
@@ -17,24 +17,30 @@ def init_battle_state():
         st.session_state.battle_done = False
 
 def scroll_to_section(anchor_id: str):
-    components.html(
+    target_id = json.dumps(anchor_id)
+    st.html(
         f"""
         <script>
-            window.parent.document.
-            getElementById('{anchor_id}').
-            scrollIntoView({{behavior: 'smooth', block: 'start'}});
+            const scrollToAnchor = () => {{
+                const target = window.parent.document.getElementById({target_id});
+                if (target) {{
+                    target.scrollIntoView({{behavior: 'smooth', block: 'start'}});
+                }}
+            }};
+            requestAnimationFrame(() => setTimeout(scrollToAnchor, 0));
         </script>
         """,
-        height=0,
+        unsafe_allow_javascript=True,
     )
 
 def play_audio(url: str):
-    html_code = f"""
+    st.html(
+        f"""
         <audio autoplay>
             <source src="{url}" type="audio/mp3">
         </audio>
-    """
-    components.html(html_code, height=0, width=0)
+        """
+    )
 
 def select_random_animals():
     a1, a2 = random.sample(animals, 2)
@@ -119,7 +125,6 @@ def render_battle():
             time.sleep(1)
 
         loading_screen.empty()
-        scroll_to_section("battle-results-anchor")
 
         play_audio("https://assets.mixkit.co/active_storage/sfx/2780/2780-preview.mp3")
         with loading_screen.container():
@@ -151,7 +156,6 @@ def render_battle():
                 time.sleep(1.25)
 
         loading_screen.empty()
-        scroll_to_section("battle-results-anchor")
 
         with st.spinner("💭 BEASTGPT IS DECIDING THE VICTOR..."):
             battle_result = simulate_battle(animal1, animal2)
