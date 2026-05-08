@@ -28,7 +28,7 @@ def scroll_js(anchor_id: str = "battle-results-anchor") -> str:
     return f"""
     <script>
       const anchor = document.getElementById("{anchor_id}");
-      if (element) {{
+      if (anchor) {{
         anchor.scrollIntoView({{ behavior: "smooth", block: "start" }});
         console.info("Scrolled. Element:", anchor);
       }} else {{
