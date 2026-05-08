@@ -107,12 +107,19 @@ def render_battle():
                 st.html(
                     """
                     <script>
-                        const element = window.parent.document.getElementById('battle-results-anchor');
+                        const element = window.parent.document.getElementById("battle-results-anchor");
                         if(element)
-                            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        {
+                            element.scrollIntoView({ behavior: "smooth", block: "start" });
+                            console.info("Scrolled. Element:", element);
+                        }
+                        else
+                        {
+                            console.warning("Failed to scroll. Element:", element);
+                        }  
                     </script>
                     """,
-                    unsafe_allow_javascript=True,
+                    unsafe_allow_javascript=True
                 )
             time.sleep(1)
 
@@ -190,12 +197,19 @@ def render_battle():
             st.html(
                     """
                     <script>
-                        const element = window.parent.document.getElementById('battle-results-anchor');
+                        const element = window.parent.document.getElementById("battle-results-anchor");
                         if(element)
-                            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        {
+                            element.scrollIntoView({ behavior: "smooth", block: "start" });
+                            console.info("Scrolled. Element:", element);
+                        }  
+                        else
+                        {
+                            console.warning("Failed to scroll. Element:", element);
+                        }  
                     </script>
                     """,
-                    unsafe_allow_javascript=True,
+                    unsafe_allow_javascript=True
                 )
             
             time.sleep(0.4)
