@@ -24,6 +24,22 @@ def play_audio(url: str):
         """
     )
 
+def scroll_js(anchor_id: str = "battle-results-anchor") -> str:
+    return f"""
+    <script>
+      const anchor = document.getElementById("{anchor_id}");
+      if (element) {{
+        anchor.scrollIntoView({{ behavior: "smooth", block: "start" }});
+        console.info("Scrolled. Element:", anchor);
+      }} else {{
+        console.warn("Failed to scroll. Element:", anchor);
+      }}
+    </script>
+    """
+
+def run_scroll(anchor_id: str = "battle-results-anchor"):
+    st.html(scroll_js(anchor_id), unsafe_allow_javascript=True)
+
 def select_random_animals():
     a1, a2 = random.sample(animals, 2)
     st.session_state.sel1 = a1
@@ -104,23 +120,7 @@ def render_battle():
             with loading_screen.container():
                 st.markdown(f"<div class='countdown'>{num}</div>", unsafe_allow_html=True)
             if num == "3":
-                st.html(
-                    """
-                    <script>
-                        const element = window.parent.document.getElementById("battle-results-anchor");
-                        if(element)
-                        {
-                            element.scrollIntoView({ behavior: "smooth", block: "start" });
-                            console.info("Scrolled. Element:", element);
-                        }
-                        else
-                        {
-                            console.warning("Failed to scroll. Element:", element);
-                        }  
-                    </script>
-                    """,
-                    unsafe_allow_javascript=True
-                )
+                run_scroll()
             time.sleep(1)
 
         loading_screen.empty()
@@ -194,23 +194,7 @@ def render_battle():
                 </div>
             </div>""", unsafe_allow_html=True)
 
-            st.html(
-                    """
-                    <script>
-                        const element = window.parent.document.getElementById("battle-results-anchor");
-                        if(element)
-                        {
-                            element.scrollIntoView({ behavior: "smooth", block: "start" });
-                            console.info("Scrolled. Element:", element);
-                        }  
-                        else
-                        {
-                            console.warning("Failed to scroll. Element:", element);
-                        }  
-                    </script>
-                    """,
-                    unsafe_allow_javascript=True
-                )
+            run_scroll()
             
             time.sleep(0.4)
             st.balloons()
