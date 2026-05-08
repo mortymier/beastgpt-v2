@@ -27,13 +27,15 @@ def play_audio(url: str):
 def scroll_js(anchor_id: str = "battle-results-anchor") -> str:
     return f"""
     <script>
-      const anchor = document.getElementById("{anchor_id}");
-      if (anchor) {{
-        anchor.scrollIntoView({{ behavior: "smooth", block: "start" }});
-        console.info("Scrolled. Element:", anchor);
-      }} else {{
-        console.warn("Failed to scroll. Element:", anchor);
-      }}
+      (function() {{
+        const anchor = document.getElementById("{anchor_id}");
+        if (anchor) {{
+          anchor.scrollIntoView({{ behavior: "smooth", block: "start" }});
+          console.info("Scrolled. Element:", anchor);
+        }} else {{
+          console.warn("Failed to scroll. Element:", anchor);
+        }}
+      }})();
     </script>
     """
 
