@@ -470,7 +470,14 @@
 {
     background-color: var(--midnight);
     border-top: 2px solid var(--blood);
-    padding: 2rem 8rem;
+    padding: 2rem 0;
+}
+
+[data-testid="stBottomBlockContainer"] [data-testid="stVerticalBlock"]
+{
+    margin: 0 auto;
+    width: 75%;
+    max-width: 75%;
 }
 
 /* Battle result styling in chat */
