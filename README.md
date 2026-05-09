@@ -83,7 +83,7 @@ beastgpt-v2/
 6. In the secrets.toml file, add your Groq and Tavily API Key using these lines of code:
 ```toml
 GROQ_API_KEY = "your_groq_api_key_here"
-TAVILY_API_KEY="your_tavliy_api_key_here"
+TAVILY_API_KEY="your_tavily_api_key_here"
 ```
 
 7. After all these steps, try running the app in your terminal.
