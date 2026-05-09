@@ -21,6 +21,7 @@ ___
 * **Chat Mode:** Describe your epic animal battle in full detail on a chat interface.
 * AI generates entertaining battle stories and provides comprehensive animal stat tables.
 * AI responds to animal education inquiries.
+* AI can search the web about animal facts to deliver more accurate battle results.
 
 ---
 
@@ -28,7 +29,8 @@ ___
 
 * Python v3.14
 * Streamlit
-* Groq API
+* Groq API - generative AI
+* Tavily API - web search
 * Llama 3.1 8B Instant (Chat Mode)
 * Llama 3.3 70B Versatile (Battle Mode)
 
@@ -50,6 +52,7 @@ cd beastgpt-v2
 ```bash
 pip install streamlit
 pip install groq
+pip install tavily-python
 ```
 
 or
@@ -77,9 +80,10 @@ beastgpt-v2/
 └── ai.py
 ```
 
-6. In the secrets.toml file, add your Groq API Key using this line of code:
+6. In the secrets.toml file, add your Groq and Tavily API Key using these lines of code:
 ```toml
 GROQ_API_KEY = "your_groq_api_key_here"
+TAVILY_API_KEY="your_tavliy_api_key_here"
 ```
 
 7. After all these steps, try running the app in your terminal.
