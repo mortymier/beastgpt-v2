@@ -1,7 +1,8 @@
 import streamlit as st
 import re
+import requests
 from pathlib import Path
-from ai import simulate_chat_battle
+from ai import simulate_chat_battle, detect_search_suggestion, remove_search_marker, format_search_context, search_animal_facts
 
 LOGO_PATH = Path(__file__).resolve().parent / "beastgptv2_logo.png"
 BEAST_LOGO_BYTES = LOGO_PATH.read_bytes() if LOGO_PATH.exists() else None
@@ -11,6 +12,14 @@ def init_chat_state():
         st.session_state.chat_history = []
     if "chat_phase" not in st.session_state:
         st.session_state.chat_phase = "scenario"
+    if "search_pending" not in st.session_state:
+        st.session_state.search_pending = False
+    if "search_query" not in st.session_state:
+        st.session_state.search_query = None
+    if "pending_user_message" not in st.session_state:
+        st.session_state.pending_user_message = None
+    if "battle_context" not in st.session_state:
+        st.session_state.battle_context = {}
 
 def render_chat():
     init_chat_state()
@@ -42,10 +51,11 @@ def render_chat():
             else:
                 st.markdown(message["content"])
 
-    user_input = st.chat_input("Describe your battle scenario...", key="chat_input")
+    user_input = st.chat_input("Describe your battle scenario...", key="chat_input", disabled=st.session_state.search_pending)
 
-    if user_input:
+    if user_input and not st.session_state.search_pending:
         st.session_state.chat_history.append({"role": "user", "content": user_input})
+        st.session_state.pending_user_message = user_input
 
         with st.chat_message("assistant", avatar=BEAST_LOGO_BYTES):
             full_response = ""
@@ -55,9 +65,103 @@ def render_chat():
                 full_response += chunk
                 placeholder.markdown(full_response)
 
-            st.session_state.chat_history.append({"role": "assistant", "content": full_response})
+            # Check if response contains a search suggestion (Phase 2)
+            has_suggestion, search_query = detect_search_suggestion(full_response)
+            
+            if has_suggestion:
+                # Store search info in session state and mark as pending
+                st.session_state.search_pending = True
+                st.session_state.search_query = search_query
+                st.session_state.battle_context = {"last_ai_response": full_response}
+                
+                # Remove the search marker from display and show cleaned response
+                clean_response = remove_search_marker(full_response)
+                placeholder.markdown(clean_response)
+                
+                # Store clean response in chat history
+                st.session_state.chat_history.append({"role": "assistant", "content": clean_response})
+            else:
+                # No search suggestion, add response as-is
+                st.session_state.chat_history.append({"role": "assistant", "content": full_response})
 
         st.rerun()
+    
+    # Handle search confirmation buttons (Phase 2 → Phase 3)
+    if st.session_state.search_pending and st.session_state.search_query:
+        st.markdown("---")
+        col1, col2, col3 = st.columns([1, 1, 2])
+        
+        with col1:
+            if st.button("✅ Yes, Search!", key="search_yes", use_container_width=True):
+                try:
+                    # Execute search
+                    with st.spinner("🔍 Searching for animal facts..."):
+                        search_results = search_animal_facts(st.session_state.search_query)
+                        search_context = format_search_context(search_results)
+
+                    # Generate battle simulation (Phase 3) with search context and 70B model
+                    with st.chat_message("assistant", avatar=BEAST_LOGO_BYTES):
+                        full_response = ""
+                        placeholder = st.empty()
+
+                        # Get the original user message to pass with search context
+                        user_msg = st.session_state.pending_user_message
+
+                        for chunk in simulate_chat_battle(
+                            user_msg,
+                            st.session_state.chat_history,
+                            use_70b=True,
+                            search_context=search_context
+                        ):
+                            full_response += chunk
+                            placeholder.markdown(full_response)
+
+                        # Add the battle result to history
+                        if "WHO WINS" in full_response.upper():
+                            st.session_state.chat_history.append({"role": "assistant", "content": full_response})
+
+                    # Reset search state only after a successful search + battle flow
+                    st.session_state.search_pending = False
+                    st.session_state.search_query = None
+                    st.session_state.pending_user_message = None
+                    st.session_state.battle_context = {}
+                    st.rerun()
+                except requests.exceptions.RequestException:
+                    st.error("Web search failed because the connection was reset. You can try again or skip search.")
+        
+        with col2:
+            if st.button("❌ Skip Search", key="search_no", use_container_width=True):
+                # Generate battle without search (Phase 3) using 8B model
+                with st.chat_message("assistant", avatar=BEAST_LOGO_BYTES):
+                    full_response = ""
+                    placeholder = st.empty()
+                    
+                    user_msg = st.session_state.pending_user_message
+                    
+                    for chunk in simulate_chat_battle(
+                        user_msg,
+                        st.session_state.chat_history,
+                        use_70b=False,
+                        search_context=None
+                    ):
+                        full_response += chunk
+                        placeholder.markdown(full_response)
+                    
+                    # Add the battle result to history
+                    if "WHO WINS" in full_response.upper():
+                        st.session_state.chat_history.append({"role": "assistant", "content": full_response})
+                
+                # Reset search state
+                st.session_state.search_pending = False
+                st.session_state.search_query = None
+                st.session_state.pending_user_message = None
+                st.session_state.battle_context = {}
+                st.rerun()
+        
+        with col3:
+            st.caption("Should I search the web for accurate facts?")
+        
+        st.markdown("---")
         
     # Clear chat button — only show if there's history
     if st.session_state.chat_history:
