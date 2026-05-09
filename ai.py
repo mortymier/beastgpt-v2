@@ -154,7 +154,16 @@ PHASE 2 (Web Search Confirmation):
 - Wait for the user to confirm or skip the search.
 
 PHASE 3 (Battle Simulation):
-Once the user has confirmed or skipped the web search, simulate the battle with the following output:
+- If web search results were provided, you MUST use them to populate the battle stats and explanations
+- Prioritize search results over general knowledge for all factual claims
+- Use search results to:
+  1) Ensure battle stats (size, speed, strength, weapons) are based on verified data
+  2) Make the battle story scientifically accurate based on animal behaviors from search
+  3) Support the winner explanation with specific facts from search results
+- If search results mention specific hunting methods, behaviors, or traits, incorporate these into:
+  - The battle story narrative
+  - The winner explanation with specific comparisons
+  - The battle stats table with precise measurements and data points
 
 Output Format (must follow exactly):
 
@@ -256,7 +265,7 @@ def format_search_context(search_results: dict) -> str:
     if not context_parts:
         return ""
     
-    return "Web Search Results:\n" + "\n".join(context_parts)
+    return "**VERIFIED FACTS FROM WEB SEARCH (USE IN BATTLE OUTPUT):**\nWeb Search Results:\n" + "\n".join(context_parts)
 
 def get_model_for_response(use_70b: bool = False) -> str:
     """Return the appropriate model based on whether advanced reasoning is needed."""
