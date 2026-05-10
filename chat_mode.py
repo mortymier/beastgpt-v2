@@ -2,7 +2,7 @@ import streamlit as st
 import re
 import requests
 from pathlib import Path
-from ai import simulate_chat_battle, detect_search_suggestion, remove_search_marker, format_search_context, search_animal_facts
+from ai import simulate_chat_battle, detect_search_suggestion, remove_search_marker, format_search_context, format_search_preview, search_animal_facts
 
 LOGO_PATH = Path(__file__).resolve().parent / "beastgptv2_logo.png"
 BEAST_LOGO_BYTES = LOGO_PATH.read_bytes() if LOGO_PATH.exists() else None
@@ -20,6 +20,19 @@ def init_chat_state():
         st.session_state.pending_user_message = None
     if "battle_context" not in st.session_state:
         st.session_state.battle_context = {}
+    if "search_context" not in st.session_state:
+        st.session_state.search_context = None
+    if "search_preview_ready" not in st.session_state:
+        st.session_state.search_preview_ready = False
+
+def reset_search_state():
+    """Reset all search-related session state variables to their initial values."""
+    st.session_state.search_pending = False
+    st.session_state.search_query = None
+    st.session_state.pending_user_message = None
+    st.session_state.battle_context = {}
+    st.session_state.search_context = None
+    st.session_state.search_preview_ready = False
 
 def render_chat():
     init_chat_state()
@@ -35,16 +48,20 @@ def render_chat():
         with center:
             st.markdown("""
                 <div style="text-align:center; line-height:2; letter-spacing:1px; margin-bottom: 2rem">
-                    💬 Tell <span style="color:crimson">BeastGPT</span> about your epic animal battle! <br>
+                    💬 Tell <span style="color:crimson">BeastGPT</span> about your epic animal battle! <br><br>
                     ⚔️ Which <span style="color:orange">two animals</span>  are going to be fighting? <br>
-                    ⛅ What is the  <span style="color:gold">weather and terrain</span> during the battle? <br>
-                    <span style="color:gray"> Example: Alligator vs Anaconda in a riverbank while raining. </span>
+                    <span style="color:gray"> Alligator vs Anaconda </span> <br> <br>
+                    ⛅ What is the <span style="color:gold">weather and terrain</span> during the battle? <br>
+                    <span style="color:gray"> Grizzly Bear vs Silverback Gorilla. The weather is rainy and the terrain is a dense forest.
+ </span>
                 </div>""", unsafe_allow_html=True)
 
     for message in st.session_state.chat_history:
         avatar = BEAST_LOGO_BYTES if message["role"] == "assistant" else "👤"
         with st.chat_message(message["role"], avatar=avatar):
             if message["role"] == "user":
+                st.markdown(message["content"])
+            elif message["role"] == "assistant" and message.get("type") == "search_preview":
                 st.markdown(message["content"])
             elif message["role"] == "assistant" and "WHO WINS" in message["content"].upper():
                 render_battle_result(message["content"])
@@ -92,54 +109,52 @@ def render_chat():
         col1, col2, col3 = st.columns([1, 1, 2])
         
         with col1:
-            if st.button("✅ Yes, Search!", key="search_yes", use_container_width=True):
+            if st.button(
+                "✅ Yes, Search!",
+                key="search_yes",
+                use_container_width=True,
+                disabled=st.session_state.search_preview_ready,
+            ):
                 try:
                     # Execute search
                     with st.spinner("🔍 Searching for animal facts..."):
                         search_results = search_animal_facts(st.session_state.search_query)
                         search_context = format_search_context(search_results)
 
-                    # Generate battle simulation (Phase 3) with search context and 70B model
-                    with st.chat_message("assistant", avatar=BEAST_LOGO_BYTES):
-                        full_response = ""
-                        placeholder = st.empty()
+                    preview_markdown = format_search_preview(search_results, st.session_state.search_query)
 
-                        # Get the original user message to pass with search context
-                        user_msg = st.session_state.pending_user_message
-
-                        for chunk in simulate_chat_battle(
-                            user_msg,
-                            st.session_state.chat_history,
-                            use_70b=True,
-                            search_context=search_context
-                        ):
-                            full_response += chunk
-                            placeholder.markdown(full_response)
-
-                        # Add the battle result to history
-                        if "WHO WINS" in full_response.upper():
-                            st.session_state.chat_history.append({"role": "assistant", "content": full_response})
-
-                    # Reset search state only after a successful search + battle flow
-                    st.session_state.search_pending = False
-                    st.session_state.search_query = None
-                    st.session_state.pending_user_message = None
-                    st.session_state.battle_context = {}
+                    # Save context and display web facts before generating the final outcome.
+                    st.session_state.search_context = search_context
+                    st.session_state.search_preview_ready = True
+                    st.session_state.chat_history.append(
+                        {"role": "assistant", "type": "search_preview", "content": preview_markdown}
+                    )
                     st.rerun()
                 except requests.exceptions.RequestException:
                     st.error("Web search failed because the connection was reset. You can try again or skip search.")
         
         with col2:
-            if st.button("❌ Skip Search", key="search_no", use_container_width=True):
-                # Generate battle without search (Phase 3) using 8B model
+            if st.button(
+                "❌ Skip Search",
+                key="search_no",
+                use_container_width=True,
+                disabled=st.session_state.search_preview_ready,
+            ):
+                # Add simulated user message to chat history
+                skip_message = "Skip web search"
+                st.session_state.chat_history.append({"role": "user", "content": skip_message})
+                
+                # Display the simulated user message in chat
+                with st.chat_message("user", avatar="👤"):
+                    st.markdown(skip_message)
+                
+                # Generate AI response to the skip message using 8B model
                 with st.chat_message("assistant", avatar=BEAST_LOGO_BYTES):
                     full_response = ""
                     placeholder = st.empty()
                     
-                    user_msg = st.session_state.pending_user_message
-                    
                     for chunk in simulate_chat_battle(
-                        user_msg,
+                        skip_message,
                         st.session_state.chat_history,
                         use_70b=False,
                         search_context=None
@@ -152,16 +167,41 @@ def render_chat():
                         st.session_state.chat_history.append({"role": "assistant", "content": full_response})
                 
                 # Reset search state
-                st.session_state.search_pending = False
-                st.session_state.search_query = None
-                st.session_state.pending_user_message = None
-                st.session_state.battle_context = {}
+                reset_search_state()
                 st.rerun()
         
         with col3:
             st.caption("Should I search the web for accurate facts?")
         
         st.markdown("---")
+
+    # Trigger Phase 3 only after the user has seen search results.
+    if st.session_state.search_pending and st.session_state.search_preview_ready:
+        c1, c2 = st.columns([2, 1])
+        with c1:
+            st.info("Web facts are ready. Generate the battle outcome when you're ready.")
+        with c2:
+            if st.button("⚔️ Generate Battle Outcome", key="generate_battle_with_search", use_container_width=True):
+                with st.chat_message("assistant", avatar=BEAST_LOGO_BYTES):
+                    full_response = ""
+                    placeholder = st.empty()
+
+                    user_msg = st.session_state.pending_user_message
+
+                    for chunk in simulate_chat_battle(
+                        user_msg,
+                        st.session_state.chat_history,
+                        use_70b=True,
+                        search_context=st.session_state.search_context
+                    ):
+                        full_response += chunk
+                        placeholder.markdown(full_response)
+
+                    if "WHO WINS" in full_response.upper():
+                        st.session_state.chat_history.append({"role": "assistant", "content": full_response})
+
+                reset_search_state()
+                st.rerun()
         
     # Clear chat button — only show if there's history
     if st.session_state.chat_history:
@@ -170,6 +210,7 @@ def render_chat():
             if st.button("🗑️ CLEAR CHAT 🗑️", type="secondary", key="clear_chat"):
                 st.session_state.chat_history = []
                 st.session_state.chat_phase = "scenario"
+                reset_search_state()
                 st.rerun()
 
 def render_battle_result(result_text: str):
