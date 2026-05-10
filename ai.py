@@ -92,15 +92,6 @@ If the user asks for a battle simulation, follow the battle format and ask follo
 Do not refuse animal education questions.
 Do not force battle mode unless the user is clearly asking for a battle.
 
-WEB SEARCH CAPABILITY:
-- You can suggest searching the web to provide more accurate animal facts or verify battle outcomes.
-- Suggest web search when the user explicitly asks for it OR when providing detailed/niche animal behaviors that might have recent research.
-- When suggesting web search, format it EXACTLY as: [SEARCH_QUERY: "your search query here"]
-- Place this marker at the END of your response as a natural question, for example:
-  "Should I search the web for the latest research on lion hunting tactics? [SEARCH_QUERY: "lion hunting strategies and success rates 2024"]"
-- Always suggest a search when the user asks "Can you search..." or "Search for..." or similar phrases.
-- For well-known battles (like lion vs tiger), you may optionally suggest: "Would you like me to search for specific recent studies on lion vs tiger encounters? [SEARCH_QUERY: "lion vs tiger research studies"]"
-
 Instruction Hierarchy (highest to lowest):
 1. Rules in this system prompt
 2. User's battle scenario and follow-up answers
@@ -132,30 +123,56 @@ Task Rules:
   2) Clear winner explanation paragraph based on compared traits and environmental factors
   3) A markdown battle stats table with accurate information
 
+WEB SEARCH CAPABILITY:
+- You ONLY suggest web search in PHASE 2, AFTER you have collected:
+  1) Both animal names
+  2) Weather condition
+  3) Environment/terrain
+- NEVER suggest web search during PHASE 1 (clarifying questions phase)
+- In PHASE 2, ask if the user wants web search before generating any battle outcome
+- Format web search suggestions EXACTLY as: [SEARCH_QUERY: "your search query here"]
+- Place this marker at the END of your response as a natural question
+- If relevant, add the weather and environment/terrain to the search query
+- Only suggest searches when:
+  1) The user explicitly asks for it ("Can you search...", "Search for...")
+  2) The animals are less common/exotic with niche behaviors
+  3) The accuracy of the battle results would improve 
+
+PHASE 0 (Already Complete Scenario):
+- If the user's initial message already includes:
+  1) both animals
+  2) weather
+  3) environment/terrain
+  then skip PHASE 1 entirely.
+- Do not ask any clarification questions.
+- Immediately proceed to PHASE 2 and, if appropriate, ask whether the user wants web search.
+- Only use PHASE 1 when one or more of those required details are missing.
+
 PHASE 1 (Clarifying Questions):
-- If the user has not provided a weather or terrain, ask these follow-up questions:
+- Use this phase only if at least one required detail is missing.
+- If animals, weather, and terrain are already present, do not ask anything here.
+- If the user has not provided weather or environment/terrain, ask ONLY these questions:
     1) What's the weather condition? (e.g., sunny, rainy, snowy, stormy, etc.)
     2) What's the environment or terrain? (e.g., forest, desert, grassland, ocean, urban, etc.)
 - Keep the tone friendly and encouraging. Ask questions naturally in a conversational way.
-- After you have weather and terrain, ask if the user wants to search the web for accurate facts.
-- Do NOT generate the battle simulation yet. Stop and wait for user response.
+- IMPORTANT: Do NOT mention or suggest web search in this phase.
+- Do NOT generate the battle simulation yet.
+- After you have weather and terrain, proceed to PHASE 2.
 
 PHASE 2 (Web Search Confirmation):
-- You have all battle context (animals, weather, terrain).
-- Ask if the user wants you to search for web facts to enhance the battle accuracy.
-- Suggest web search when:
-  1) The user explicitly asks for it ("Can you search...", "Search for...")
-  2) The animals are less common or have niche behaviors
-  3) The battle scenario might benefit from recent research
+- You NOW have all battle context: animals, weather, environment/terrain
+- FIRST, tell the user you're ready and ask if they want web search
+- Suggest web search suggestion ONLY if the animals are less common or you think research or articles would help improve battle accuracy
 - Format the search suggestion EXACTLY as: [SEARCH_QUERY: "your search query here"]
-- Place this marker at the END of your response as a natural question, for example:
-  "Should I search for recent research on komodo dragon vs saltwater crocodile hunting methods? [SEARCH_QUERY: "komodo dragon saltwater crocodile hunting predator prey behavior"]"
-- Do NOT generate any battle stats, winner announcement, or story yet.
-- Wait for the user to confirm or skip the search.
+- Place this marker at the END of your response.
+- The search query should be exactly placed on a single pair of double quotes.
+- If making multiple queries, seperate them by commas inside the quote: [SEARCH_QUERY: "query1, query2"]
+- If relevant, add the weather and environment/terrain to the search query
+- Do NOT generate any battle outcome, stats, or story yet
+- Wait for user to confirm or skip search before proceeding
 
 PHASE 3 (Battle Simulation):
 - If web search results were provided, you MUST use them to populate the battle stats and explanations
-- Prioritize search results over general knowledge for all factual claims
 - Use search results to:
   1) Ensure battle stats (size, speed, strength, weapons) are based on verified data
   2) Make the battle story scientifically accurate based on animal behaviors from search
@@ -254,8 +271,8 @@ def format_search_context(search_results: dict) -> str:
     if search_results.get('answer'):
         context_parts.append(f"Summary: {search_results['answer']}")
     
-    # Include top 2-3 results
-    results = search_results.get('results', [])[:3]
+    # Include top results
+    results = search_results.get('results', [])[:4]
     for i, result in enumerate(results, 1):
         title = result.get('title', 'Untitled')
         content = result.get('content', '')
@@ -266,6 +283,39 @@ def format_search_context(search_results: dict) -> str:
         return ""
     
     return "**VERIFIED FACTS FROM WEB SEARCH (USE IN BATTLE OUTPUT):**\nWeb Search Results:\n" + "\n".join(context_parts)
+
+def format_search_preview(search_results: dict, query: str) -> str:
+    """Build a user-facing markdown preview of fetched web results."""
+    if not search_results:
+        return "🔎 I ran the web search, but no results were returned."
+
+    lines = ["### 🔎 Web Search Results", f"**Query:** {query}"]
+
+    answer = search_results.get("answer")
+    if answer:
+        lines.append(f"\n**Quick Summary:** {answer}")
+
+    results = search_results.get("results", [])[:4]
+    if results:
+        lines.append("\n**Top Sources:**")
+        for idx, result in enumerate(results, 1):
+            title = result.get("title", "Untitled source")
+            url = result.get("url")
+            content = (result.get("content") or "").strip()
+            snippet = content[:500].rstrip() + "...\n"
+
+            source_line = f"{idx}. **{title}**"
+            if url:
+                source_line += f" ({url})"
+            lines.append(source_line)
+
+            if snippet:
+                lines.append(f"   - {snippet}")
+    else:
+        lines.append("No source snippets were available from this search.")
+
+    lines.append("\nIf this looks good, I can now generate the battle outcome using these facts.")
+    return "\n".join(lines)
 
 def get_model_for_response(use_70b: bool = False) -> str:
     """Return the appropriate model based on whether advanced reasoning is needed."""
@@ -325,7 +375,8 @@ def simulate_chat_battle(user_message: str, chat_history: list, use_70b: bool = 
 def search_animal_facts(query: str):
     return tavily_client.search(
         query,
-        search_depth="basic",
-        max_results=3,
-        include_answer=True
+        search_depth="advanced",
+        max_results=4,
+        include_answer=True,
+        exclude_domains=["facebook.com", "instagram.com", "reddit.com", "snapchat.com", "tiktok.com", "twitter.com", "x.com"]
     )
