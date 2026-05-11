@@ -78,7 +78,7 @@ def render_chat():
             full_response = ""
             placeholder = st.empty()
 
-            for chunk in simulate_chat_battle(user_input, st.session_state.chat_history):
+            for chunk in simulate_chat_battle(user_input, st.session_state.chat_history, use_70b=True):
                 full_response += chunk
                 placeholder.markdown(full_response)
 
@@ -156,7 +156,7 @@ def render_chat():
                     for chunk in simulate_chat_battle(
                         skip_message,
                         st.session_state.chat_history,
-                        use_70b=False,
+                        use_70b=True,
                         search_context=None
                     ):
                         full_response += chunk
